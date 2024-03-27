@@ -1,11 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 
 #define STACK_MAX_SIZE 8
 
 struct Node
 {
-    char content;
+    int content;
     struct Node * next; 
 };
 
@@ -15,26 +16,55 @@ struct Stack
     int top;
 };
 
-void createNode( struct Node* node, char content);
-void addOnHead( struct Node ** head, char content);
+struct LL_Stack
+{
+    struct Node** node;
+    int top;
+};
+
+struct Queue
+{
+    struct Node** node;
+    int last;
+};
+
+struct Tree  // just a wrapper to abstract my tree usage incase of complications
+{
+    struct TreeNode* root; 
+};
+
+struct TreeNode
+{
+    int data;
+    struct TreeNode* left;
+    struct TreeNode* right;
+};
+
+void createNode( struct Node* node, int content);
+void addOnHead( struct Node ** head, int content);
 void showAll( struct Node ** head);
-void deleteNode( struct Node ** head, char key);
+void deleteNode( struct Node ** head, int key);
 
 void initStack( struct Stack * stack);
+void init_LL_Stack( struct LL_Stack* stack);
 void stackUp( struct Stack * stack, int additive);  // add one more stack plate
+void LL_StackUp( struct LL_Stack * stack, int additive);
 void stackDown( struct Stack * stack);  // deduce by one stack plate
+void LL_StackDown( struct LL_Stack * stack);
 int checkStack( struct Stack * stack);  // print the top
+int check_LL_Stack( struct LL_Stack * stack);
 void observeStack( struct Stack * stack);  // show all stack content
+void observe_LL_Stack( struct LL_Stack * stack);
 bool isStackFull( struct Stack* stack);
 bool isStackEmpty( struct Stack* stack);
 
-void createNode( struct Node * node, char content)
+void createNode( struct Node * node, int content)
 {
     node -> next = NULL;
     node -> content = content;
 }
 
-void addOnHead( struct Node ** head, char content)// Node * prevNode)
+void addOnHead( struct Node ** head, int content)// Node * prevNode)
 {
     struct Node * tempNode = (struct Node*) malloc(sizeof(struct Node));
     tempNode -> content = content;
@@ -53,7 +83,7 @@ void showAll( struct Node ** head)
     printf( "%c\n", tempNode -> content);  // for the last node
 }
 
-void deleteNode( struct Node ** head, char key)
+void deleteNode( struct Node ** head, int key)
 {
     struct Node * tempNode = *head, * prevNode;
     while( tempNode -> next != NULL && tempNode -> content != key)
@@ -76,6 +106,12 @@ void initStack( struct Stack* stack)
     return ;
 }
 
+void init_LL_Stack( struct LL_Stack* stack)
+{
+    stack -> top = -1;  // 0 is the first index so...
+    return ;
+}
+
 void stackUp( struct Stack * stack, int additive)  // add one more stack plate
 {
     if(!isStackFull(stack))
@@ -91,10 +127,39 @@ void stackUp( struct Stack * stack, int additive)  // add one more stack plate
     return ;
 }
 
+void LL_StackUp( struct LL_Stack * stack, int additive)
+{
+    struct Node * newNode = (struct Node*) malloc(sizeof(struct Node));
+    if( newNode == NULL )  // Handle memory allocation failure
+    {   
+        perror("Memory allocation failure! \n\rPlease track the dynamic memory space.");
+        return;
+    }
+    createNode( newNode, additive);
+    if( stack -> top != -1)  // if LL stack is not empty
+    {
+        newNode -> next = stack -> node[stack -> top];  // link the new node
+    }
+    stack -> node[++( stack -> top)] = newNode;
+    return ;
+}
+
 void stackDown( struct Stack * stack)  // deduce by one stack plate
 {
     if(!isStackEmpty(stack))
         (stack -> top)--;  // space of the old top index will be overwritten in next stackUp
+    else 
+        printf("The stack is empty already!\n");
+    return ;
+}
+
+void LL_StackDown( struct LL_Stack * stack)
+{
+    if( stack -> top != -1)
+    {
+        free( stack -> node[stack -> top]);
+        (stack -> top)--;
+    }
     else 
         printf("The stack is empty already!\n");
     return ;
@@ -108,12 +173,31 @@ int checkStack( struct Stack * stack)  // print the top
         return stack -> top;  // -1 will be return if stack is empty
 }
 
+int check_LL_Stack( struct LL_Stack * stack)
+{
+    if( stack -> top != -1)
+        return ( stack -> node[stack -> top] -> content);
+    else
+        return -1;  // -1 will be return if stack is empty
+}
+
 void observeStack(struct Stack * stack)  // show all stack content
 {
     if(!isStackEmpty(stack))
     {
         for( int i = 0; i <= (stack -> top); i++)
             printf("%d, ", stack -> content[i]);
+        putchar('\n');
+    }
+    return ;
+}
+
+void observe_LL_Stack(struct LL_Stack * stack)
+{
+    if( stack -> top != -1)
+    {
+        for( int i = stack -> top; i >= 0; i--)
+            printf("%d, ", stack -> node[i] -> content);
         putchar('\n');
     }
     return ;
