@@ -58,6 +58,13 @@ void observe_LL_Stack( struct LL_Stack * stack);
 bool isStackFull( struct Stack* stack);
 bool isStackEmpty( struct Stack* stack);
 
+void initTreeNode( struct TreeNode** rootAddr, int rootData);
+struct TreeNode* treeNodeAdd( struct TreeNode* root, int data);
+struct TreeNode* treeNodeDelete( struct TreeNode* root, int key);
+struct TreeNode* minTreeNode( struct TreeNode* root);
+struct TreeNode* maxTreeNode( struct TreeNode* root);
+void observeTree( struct TreeNode* root);
+
 void createNode( struct Node * node, int content)
 {
     node -> next = NULL;
@@ -213,3 +220,101 @@ bool isStackEmpty( struct Stack* stack)
     return ( stack -> top == -1);
 }
 
+void initTreeNode( struct TreeNode** rootAddr, int rootData)
+{
+    *rootAddr = (struct TreeNode*)malloc(sizeof(struct TreeNode));
+    (*rootAddr) -> data = rootData;
+    (*rootAddr) -> left = NULL;  // this also is 0x00 or '\0'
+    (*rootAddr) -> right = NULL;
+}
+
+struct TreeNode* treeNodeAdd( struct TreeNode* root, int additive)
+{
+    struct TreeNode * newNode = (struct TreeNode*) malloc( sizeof(struct TreeNode));
+    newNode -> data = additive;
+    newNode -> left = NULL;
+    newNode -> right = NULL;
+
+    if( newNode == NULL)
+    {
+        perror("Error! New node creation failed!\n\r");
+        exit(EXIT_FAILURE);
+    }
+    if( root == NULL)
+    {
+        return newNode;
+    }
+        
+    if( additive < root -> data)
+        root -> left = treeNodeAdd( root -> left, additive);
+    else if( additive > root -> data)
+        root -> right = treeNodeAdd( root -> right, additive);
+    return root;  // silently return not to add duplicated numbers
+}
+
+struct TreeNode* treeNodeDelete( struct TreeNode* root, int key)
+{
+    if( key == root -> data)
+    {
+        if( root -> right != NULL)
+        {
+            struct TreeNode* tempNode = root -> right;
+            if( root -> left != NULL)
+                minTreeNode(tempNode) -> left = root -> left;
+            free(root);
+            root = NULL;  // I don't know why I am doing this
+            return tempNode;
+        }
+        else if( root -> left != NULL)
+        {
+            struct TreeNode* tempNode = root -> left;
+            if( root -> right != NULL)
+                maxTreeNode(tempNode) -> right = root -> right;
+            free(root);
+            root = NULL;  // I don't know why I am doing this
+            return tempNode;
+        }
+        free(root);
+        root = NULL;
+        return NULL;
+    }
+    else if( key < root -> data)
+    {
+        root -> left = treeNodeDelete( root -> left, key);
+        return root;
+    }
+    else  // key > root -> data
+    {        
+        root -> right = treeNodeDelete( root -> right, key);
+        return root;
+    }
+}
+
+struct TreeNode* minTreeNode( struct TreeNode* root)
+{
+    if( root -> left == NULL)
+        return root;
+    else 
+        return minTreeNode( root -> left);
+}
+
+struct TreeNode* maxTreeNode( struct TreeNode* root)
+{
+    if( root -> right == NULL)
+        return root;
+    else 
+        return maxTreeNode( root -> right);
+}
+
+void observeTree( struct TreeNode* root)
+{
+    printf("%d, ", root-> data);  
+    if( root -> left != NULL)
+    {
+        observeTree( root -> left);
+    }
+    if( root -> right != NULL)
+    { 
+        observeTree( root -> right); 
+    } 
+}
